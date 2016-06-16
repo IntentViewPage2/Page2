@@ -67,6 +67,17 @@
     <AndroidResource Include="Resources\mipmap-xhdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\Icon.png" />
+    <AndroidResource Include="Resources\Drawable\sample_0.png" />
+    <AndroidResource Include="Resources\Drawable\sample_1.png" />
+    <AndroidResource Include="Resources\Drawable\sample_2.png" />
+    <AndroidResource Include="Resources\Drawable\sample_3.png" />
+    <AndroidResource Include="Resources\Drawable\sample_4.png" />
+    <AndroidResource Include="Resources\Drawable\sample_5.png" />
+    <AndroidResource Include="Resources\Drawable\sample_6.png" />
+    <AndroidResource Include="Resources\Drawable\sample_7.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Resources\Drawable\" />
+  </ItemGroup>
 </Project>
