@@ -8,7 +8,7 @@ namespace Page2.Droid
 	public class MainActivity : Activity
 	{
 		int count = 1;
-
+		string WTF=null;
 		protected override void OnCreate (Bundle savedInstanceState)
 		{
 			base.OnCreate (savedInstanceState);
