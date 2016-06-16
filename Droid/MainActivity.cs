@@ -2,6 +2,9 @@
 using Android.Widget;
 using Android.OS;
 
+
+//sid says cowbey
+
 namespace Page2.Droid
 {
 	[Activity (Label = "Page2", MainLauncher = true, Icon = "@mipmap/icon")]
