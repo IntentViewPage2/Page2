@@ -18,8 +18,13 @@ namespace Page2.Droid
 	{
 		
 		//public string icon=Android.OS.Environment.ExternalStorageDirectory+"/Download/Template";
-		public string IconPath=Android.OS.Environment.ExternalStorageDirectory+"/Download/Template";
+		public string IconPath=Android.OS.Environment.ExternalStorageDirectory+"/Download/Image";
 		List<FileSystemInfo> visibleThings = new List<FileSystemInfo>();
+		GridView Grid;
+		Button BtnSlide ;
+		Button BtnDoc;
+		Button BtnAddDoc;
+		Button BtnImage;
 		protected override void OnCreate (Bundle savedInstanceState)
 		{
 			base.OnCreate (savedInstanceState);
@@ -27,18 +32,19 @@ namespace Page2.Droid
 			// Set our view from the "main" layout resource
 			SetContentView (Resource.Layout.Main);
 
-			GridView gridview = FindViewById<GridView> (Resource.Id.gridview);
+			//
+			init ();
 
 			//檢查範本資料夾是否建立
 			this.DirCheck(new Java.IO.File (IconPath));
 
 			//呼叫找資料的方法,回傳找到範本資料夾底下的檔案路徑
 			var ReturnIcons=this.FindTemplateIcon (IconPath,visibleThings);
-			gridview.Adapter = new ImageAdapter (this,IconPath,ReturnIcons);
 
+			Grid.Adapter = new ImageAdapter (this,IconPath,ReturnIcons);
 
-			gridview.ItemClick += delegate (object sender, AdapterView.ItemClickEventArgs args) {
-				Toast.MakeText (this, args.Position.ToString (), ToastLength.Short).Show ();
+			Grid.ItemClick += delegate (object sender, AdapterView.ItemClickEventArgs args) {
+				Toast.MakeText (this, ReturnIcons[args.Position].FullName, ToastLength.Short).Show ();
 			};
 		}
 		private  List<FileSystemInfo> FindTemplateIcon (string icoopath,List<FileSystemInfo> visibleThings)
@@ -60,6 +66,15 @@ namespace Page2.Droid
 				return;
 			}
 		}
+
+		void init ()
+		{
+			Grid = FindViewById<GridView> (Resource.Id.gridview);
+			BtnSlide = FindViewById<Button> (Resource.Id.BtnSlides);
+			BtnDoc = FindViewById<Button> (Resource.Id.BtnDocuments);
+			BtnAddDoc = FindViewById<Button> (Resource.Id.BtnAddDocuments);
+			BtnImage = FindViewById<Button> (Resource.Id.BtnImages);
+		}
 	}
 
 	public class ImageAdapter : BaseAdapter
@@ -80,7 +95,6 @@ namespace Page2.Droid
 			_context = context;
 			_visibleThings = visibleThings;
 			var HowManyFile=visibleThings.Count;
-
 		}
 
 		public override int Count {
