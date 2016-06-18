@@ -10,13 +10,17 @@ using System.Linq;
 using Java.IO;
 using System.Collections.Generic;
 using System.IO;
+using System;
+using Android.Database;
 
 namespace Page2.Droid
 {
 	[Activity (Label = "Page2", MainLauncher = true, Icon = "@mipmap/icon")]
 	public class MainActivity : Activity
 	{
-		
+		private const int ImagePick=1000;
+		private const int PdfPick=2000;
+		Android.Net.Uri uri = Android.Provider.MediaStore.Images.Media.ExternalContentUri;
 		//public string icon=Android.OS.Environment.ExternalStorageDirectory+"/Download/Template";
 		public string IconPath=Android.OS.Environment.ExternalStorageDirectory+"/Download/Image";
 		List<FileSystemInfo> visibleThings = new List<FileSystemInfo>();
@@ -46,6 +50,18 @@ namespace Page2.Droid
 			Grid.ItemClick += delegate (object sender, AdapterView.ItemClickEventArgs args) {
 				Toast.MakeText (this, ReturnIcons[args.Position].FullName, ToastLength.Short).Show ();
 			};
+			BtnImage.Click += (object sender, System.EventArgs e) => 
+			{
+				var imageIntent = new Intent (Intent.ActionPick,uri);
+				imageIntent.SetType ("image/png");
+				imageIntent.PutExtra(Intent.ExtraAllowMultiple,true);
+
+				StartActivityForResult (Intent.CreateChooser (imageIntent, "選取您要匯入的檔案"), ImagePick);
+			};
+			BtnAddDoc.Click+= (object sender, EventArgs e) => 
+			{
+				
+			};
 		}
 		private  List<FileSystemInfo> FindTemplateIcon (string icoopath,List<FileSystemInfo> visibleThings)
 		{
@@ -74,6 +90,101 @@ namespace Page2.Droid
 			BtnDoc = FindViewById<Button> (Resource.Id.BtnDocuments);
 			BtnAddDoc = FindViewById<Button> (Resource.Id.BtnAddDocuments);
 			BtnImage = FindViewById<Button> (Resource.Id.BtnImages);
+		}
+		protected override void OnActivityResult (int requestCode, Result resultCode, Intent data)
+		{
+
+			string publicDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath+"/Download/";
+			base.OnActivityResult (requestCode, resultCode, data);
+
+			if(resultCode==Result.Ok && requestCode==ImagePick)
+			{
+				if (data.Data != null) 
+				{
+					if (resultCode == Result.Ok) {
+
+						//var imageView = FindViewById<ImageView> (Resource.Id.myImageView);
+						//imageView.SetImageURI (data.Data);
+						string Source = GetPathToImage(data.Data);
+
+						string Des=System.IO.Path.Combine(publicDir,new Java.IO.File (Source).Name);
+						if(new Java.IO.File(Des).Exists())
+						{
+							this.copy (new Java.IO.File(Source), new Java.IO.File(Des));
+						}
+						this.copy (new Java.IO.File(Source), new Java.IO.File(Des));
+					}
+				}
+				else
+				{
+					ClipData clipData = data.ClipData;
+					int count = clipData.ItemCount;
+					if (count > 0) {
+						Android.Net.Uri[] uris = new Android.Net.Uri[count];
+						for (int i = 0; i < count; i++) {
+							uris [i] = clipData.GetItemAt (i).Uri;
+							string Source=GetPathToImage(uris [i]);
+							string Des=System.IO.Path.Combine(publicDir,new Java.IO.File (Source).Name);
+							if(new Java.IO.File(Des).Exists())
+							{
+								this.copy (new Java.IO.File(Source), new Java.IO.File(Des));
+							}
+							this.copy (new Java.IO.File(Source), new Java.IO.File(Des));
+						}
+					}
+				}
+			}
+			if(resultCode==Result.Canceled)
+			{
+				//NotThink
+			}
+			if(resultCode==Result.Ok && requestCode==PdfPick)
+			{
+
+			}
+
+		}
+		private String GetPathToImage(Android.Net.Uri uri)
+		{
+			string path = null;
+			// The projection contains the columns we want to return in our query.
+			string[] projection = new[] { Android.Provider.MediaStore.Audio.Media.InterfaceConsts.Data };
+			using (ICursor cursor = ManagedQuery(uri, projection, null, null, null))
+			{
+				if (cursor != null)
+				{
+					int columnIndex = cursor.GetColumnIndexOrThrow(Android.Provider.MediaStore.Audio.Media.InterfaceConsts.Data);
+					cursor.MoveToFirst();
+					path = cursor.GetString(columnIndex);
+				}
+			}
+			return path;
+		}
+		private void ShowAlert(string message, EventHandler<Android.Content.DialogClickEventArgs> positiveButtonClickHandle)
+		{
+
+			AlertDialog.Builder alert = new AlertDialog.Builder (this);
+
+			alert.SetTitle (message);
+
+			alert.SetPositiveButton ("OK!", positiveButtonClickHandle);
+
+			RunOnUiThread (() => {
+				alert.Show();
+			});
+		}
+		public void copy(Java.IO.File src, Java.IO.File dst)  {
+			InputStream sou = new FileInputStream(src);
+			OutputStream des = new FileOutputStream(dst);
+
+			// Transfer bytes from in to out
+			byte[] buf = new byte[1024];
+			int len;
+			while ((len = sou.Read(buf)) > 0) {
+				des.Write(buf, 0, len);
+			}
+			sou.Close();
+			des.Close();
 		}
 	}
 
