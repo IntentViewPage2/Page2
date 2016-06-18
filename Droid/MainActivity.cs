@@ -60,7 +60,13 @@ namespace Page2.Droid
 			};
 			BtnAddDoc.Click+= (object sender, EventArgs e) => 
 			{
-				
+				Intent fileintent = new Intent(Intent.ActionGetContent);
+				//fileintent.SetType("gagt/sdf");
+				fileintent.SetType("application/pdf");
+				fileintent.PutExtra(Intent.ExtraAllowMultiple,true);
+
+				Intent destIntent = Intent.CreateChooser(fileintent, "選取Pdf");
+				StartActivityForResult(destIntent,PdfPick);
 			};
 		}
 		private  List<FileSystemInfo> FindTemplateIcon (string icoopath,List<FileSystemInfo> visibleThings)
@@ -97,23 +103,21 @@ namespace Page2.Droid
 			string publicDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath+"/Download/";
 			base.OnActivityResult (requestCode, resultCode, data);
 
+			//如果使用者要選Image
 			if(resultCode==Result.Ok && requestCode==ImagePick)
 			{
 				if (data.Data != null) 
-				{
-					if (resultCode == Result.Ok) {
+				{	
+					//var imageView = FindViewById<ImageView> (Resource.Id.myImageView);
+					//imageView.SetImageURI (data.Data);
+					string Source = GetPathToImage(data.Data);
 
-						//var imageView = FindViewById<ImageView> (Resource.Id.myImageView);
-						//imageView.SetImageURI (data.Data);
-						string Source = GetPathToImage(data.Data);
-
-						string Des=System.IO.Path.Combine(publicDir,new Java.IO.File (Source).Name);
-						if(new Java.IO.File(Des).Exists())
-						{
-							this.copy (new Java.IO.File(Source), new Java.IO.File(Des));
-						}
+					string Des=System.IO.Path.Combine(publicDir,new Java.IO.File (Source).Name);
+					if(new Java.IO.File(Des).Exists())
+					{
 						this.copy (new Java.IO.File(Source), new Java.IO.File(Des));
 					}
+					this.copy (new Java.IO.File(Source), new Java.IO.File(Des));
 				}
 				else
 				{
@@ -134,13 +138,66 @@ namespace Page2.Droid
 					}
 				}
 			}
+			//如果使用者白目不選檔案
 			if(resultCode==Result.Canceled)
 			{
 				//NotThink
 			}
+			//如果選擇的是 PDf
 			if(resultCode==Result.Ok && requestCode==PdfPick)
 			{
+				string ForPdfDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath;
+				if(data.Data!=null)
+				{
+					var SourcePath = System.Net.WebUtility.UrlDecode (data.Data.ToString());
+					var PathArray = SourcePath.Split (new string[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
+					var Source=System.IO.Path.Combine (ForPdfDir, PathArray [2]);
+					var Des = System.IO.Path.Combine (ForPdfDir, "DownLoad/"+new Java.IO.File(Source).Name);
+					Java.IO.File FileSou = new Java.IO.File (Source);
+					Java.IO.File FileDes = new Java.IO.File (Des);
+					if(FileDes.Exists())
+					{
+						//ShowAlert ("相同檔案名稱"+FileDes.Name+"已存在", null);
+						this.copy (FileSou, FileDes);
+						return;
+					}
 
+					this.copy (FileSou, FileDes);
+				}
+				//複選
+				else
+				{
+					//string s = Android.OS.Environment.ExternalStorageDirectory.Path + "/Sample/test.txt";
+					//output=new FileOutputStream(Android.OS.Environment.ExternalStorageDirectory.ToString()+"/Sample/test.txt");
+					ClipData clipData = data.ClipData;
+					int count = clipData.ItemCount;
+					if (count > 0) {
+						Android.Net.Uri[] uris = new Android.Net.Uri[count];
+						for (int i = 0; i < count; i++) {
+							uris[i] = clipData.GetItemAt(i).Uri;
+							var SourcePaths =System.IO.Path.GetFullPath (uris[i].Path);
+							var PathArray	=SourcePaths.Split (new string[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
+							var Source = System.IO.Path.Combine (ForPdfDir, PathArray [1]);
+
+							//FromFileName = new Java.IO.File (Source);
+							var Des = System.IO.Path.Combine (ForPdfDir,"DownLoad/"+new Java.IO.File(Source).Name);
+
+							Java.IO.File FileSou = new Java.IO.File (Source);
+							Java.IO.File FileDes = new Java.IO.File (Des);
+
+							if(FileDes.Exists())
+							{
+								//ShowAlert ("相同檔案名"+FileDes.Name+"稱已存在", null);
+								this.copy (FileSou, FileDes);
+								continue;
+							}
+
+							this.copy (FileSou, FileDes);
+
+						}
+					}
+					//ShowAlert ("以完成搬移檔案至DownLoad資料夾下",null);
+				}
 			}
 
 		}
